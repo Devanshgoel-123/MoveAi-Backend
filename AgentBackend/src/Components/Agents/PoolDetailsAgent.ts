@@ -1,4 +1,4 @@
-import { InitializeAgent } from "../../../api/Agent/route"
+import { InitializeAgent } from "../../Routes/Agent"
 
 
 export const getPoolDetails=async ()=>{

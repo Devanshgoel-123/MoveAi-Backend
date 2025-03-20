@@ -1,7 +1,7 @@
 
 import { tool } from "@langchain/core/tools";
 import { z as Zod } from "zod";
-import { fetchSupportedTokens,fetchTokenPriceInUsd } from "../Backend/Common/Token";
+import { fetchSupportedTokens,fetchTokenPriceInUsd } from "../Components/Common/Token";
 export const FetchTokenPriceInUsdTool = tool(
     async ({ tokenName}) => {
       try {

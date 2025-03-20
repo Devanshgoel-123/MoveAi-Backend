@@ -1,5 +1,5 @@
 import axios from "axios";
-import { fetchSupportedTokens } from "../Backend/Common/Token";
+import { fetchSupportedTokens } from "../Components/Common/Token";
 import { z as Zod } from "zod";
 import { tool } from "@langchain/core/tools";
 import { SupabaseToken } from "../../src/Types";

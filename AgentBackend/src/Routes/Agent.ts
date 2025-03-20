@@ -7,25 +7,26 @@ import {
 	PrivateKey,
 	PrivateKeyVariants,
 } from "@aptos-labs/ts-sdk"
+import { config } from "../Components/Common/Constants"
 import { AgentRuntime, AmnisStakeTool, AmnisWithdrawStakeTool, AptosGetTokenDetailTool, AptosGetTokenPriceTool, createAptosTools, EchoStakeTokenTool, EchoUnstakeTokenTool, JouleGetPoolDetails, JouleGetUserAllPositions, LiquidSwapSwapTool, PanoraSwapTool, ThalaStakeTokenTool, ThalaUnstakeTokenTool } from "move-agent-kit"
 import { ChatAnthropic } from "@langchain/anthropic"
-import { config } from "dotenv"
+import dotenv from "dotenv"
 import { createReactAgent } from "@langchain/langgraph/prebuilt"
 import { LocalSigner } from "move-agent-kit"
-import { PortfolioRebalancerTool } from "@/Components/Backend/Tools/PortfolioManager"
+import { PortfolioRebalancerTool } from "../Tools/PortfolioManager"
 import { MemorySaver } from "@langchain/langgraph"
 import { HumanMessage } from "@langchain/core/messages"
-import { NextRequest, NextResponse } from "next/server"
-import { GetUserDiversificationPreferenceTool } from "@/Components/Backend/Tools/PortfolioDiversificationTool"
+import { GetUserDiversificationPreferenceTool } from "../Tools/PortfolioDiversificationTool"
 import { AptosBalanceTool, AptosAccountAddressTool } from "move-agent-kit"
-import { FetchTokenPriceInUsdTool } from "@/Components/Backend/Tools/FetchTokenPriceTool"
-import { Find24HChangeTool } from "@/Components/Backend/Tools/VolatilityTool"
-import { GetLatestTransactionsTool, GetTransactionDetailTool } from "@/Components/Backend/Tools/GetTransactionTool"
-import { YieldOptimizationTool } from "@/Components/Backend/Agents/BestYieldOptimisingAgent"
-import { LendingBorrowingBestOpppurtunityTool } from "@/Components/Backend/Agents/LendBorrowAgent"
-import { StakingUnstakingBestOpppurtunityTool } from "@/Components/Backend/Agents/StakeUnstakeAgent"
-config()
-
+import { FetchTokenPriceInUsdTool } from "../Tools/FetchTokenPriceTool"
+import { Find24HChangeTool } from "../Tools/VolatilityTool"
+import { GetLatestTransactionsTool, GetTransactionDetailTool } from "../Tools/GetTransactionTool"
+import { YieldOptimizationTool } from "../Components/Agents/BestYieldOptimisingAgent"
+import { LendingBorrowingBestOpppurtunityTool } from "../Components/Agents/LendBorrowAgent"
+import express, { Router,Request,Response } from "express";
+import { StakingUnstakingBestOpppurtunityTool } from "../Components/Agents/StakeUnstakeAgent"
+dotenv.config()
+export const agentRouter:Router=express.Router();
 export const InitializeAgent = async () => {
 	try{
 		const aptosConfig = new AptosConfig({
@@ -81,11 +82,7 @@ export const InitializeAgent = async () => {
   - Provide concise, accurate, and helpful responses, avoiding tool details unless asked.
  
 `,
-// Response Format:Strictly follow this response format dont add any other component to this response  but inside the response string add proper \n characters for better visibility
-// {
-//   "agentResponse":"Your simplified response as a string",
-//   "toolCalled": "Tool name or null if none used"
-// }
+
 		})
 		return { agent, account, agentRuntime };
 	}catch(err){
@@ -94,94 +91,80 @@ export const InitializeAgent = async () => {
 	}	
 }
 
-
-export async function POST(request: NextRequest) {
-	try {
-	const agentCache = await InitializeAgent()
-	
-	  if(agentCache===null){
-		return {
-			message:"Failed to answer your query"
+agentRouter.post("/", async (req: Request, res: Response):Promise<any> => {
+    try {
+        const agentCache = await InitializeAgent()
+        
+          if(agentCache===null){
+                return res.status(400).json({ error: "Message is required" });
+          }
+          const { agent } = agentCache;
+          const { message } = req.body;
+          console.log("the message is:",message)
+          if (!message) {
+			return res.status(400).json({ error: "Message is required" });
 		}
-	  }
-	  const { agent, account } = agentCache;
-	  const body = await request.json();
-	  
-	  const { message } = body;
-	  console.log("the message is:",message)
-	  if (!message) {
-		return NextResponse.json(
-		  { error: "Message is required" },
-		  { status: 400 }
-		);
-	  }
-	  const config = { 
-		configurable: { 
-		  thread_id: `aptos-agent-1` 
-		} 
-	  };
-	  const response = [];
-	  
-	  const stream = await agent.stream(
-		{
-		  messages: [new HumanMessage(message)],
-		},
-		config
-	  );
-  
-	  for await (const chunk of stream) {
-		if ("agent" in chunk) {
-		  response.push({
-			type: "agent",
-			content: chunk.agent.messages[0].content
-		  });
-		} else if ("tools" in chunk) {
-		  response.push({
-			type: "tools",
-			content: chunk.tools.messages[0].content
-		  });
-		}
-	  }
-      const finalLength=response.length;
-	  console.log("the response is",response)
-	  let answer;
-	  let isParsed;
-       try {
-         answer = JSON.parse(response[finalLength - 1].content);
-		 isParsed=true;
-		 console.log(answer)
-		 console.log("case 1",typeof answer)
-       } catch (error) {
-		console.error("JSON parsing error:", error);
-		isParsed = false;
-		let tempString = response[finalLength - 1].content;
-		const match = tempString.match(/\{.*\}/s); 
-		if (match) {
-			try {
-				const extractedJSON = JSON.parse(match[0]); 
-				console.log("the new answer is:", extractedJSON.agentResponse);
-				answer = extractedJSON;
-			} catch (error) {
-				console.error("Invalid JSON:", error);
-				answer = { agentResponse: tempString }; 
-			}
-		} else {
-			answer = { agentResponse: tempString }; 
-		}
-		console.log("case 2", typeof answer);
-		console.log("the answer is:", answer);
-       }
-	   return NextResponse.json({
-		data:answer || "I am really sorry we couldn't process your request at the moment. \n Please Try Again Later",
-		agentResponse:true,
-		isParsed:isParsed
-	   })
-	} catch (error) {
-	  console.error("Agent execution error:", error);
-	  return NextResponse.json(
-		{ error: "Failed to process request", details: error},
-		{ status: 500 }
-	  );
-	}
-  }
-  
+        
+          const response = [];
+          
+          const stream = await agent.stream(
+            {
+              messages: [new HumanMessage(message)],
+            },
+            config
+          );
+      
+          for await (const chunk of stream) {
+            if ("agent" in chunk) {
+              response.push({
+                type: "agent",
+                content: chunk.agent.messages[0].content
+              });
+            } else if ("tools" in chunk) {
+              response.push({
+                type: "tools",
+                content: chunk.tools.messages[0].content
+              });
+            }
+          }
+          const finalLength=response.length;
+          console.log("the response is",response)
+          let answer={
+            agentResponse:""
+          };
+          let isParsed=false;
+           try {
+             answer = JSON.parse(response[finalLength - 1].content);
+             isParsed=true;
+             console.log(answer)
+             console.log("case 1",typeof answer)
+           } catch (error) {
+            console.error("JSON parsing error:", error);
+            isParsed = false;
+            let tempString = response[finalLength - 1].content;
+            const match = tempString.match(/\{.*\}/s); 
+            if (match) {
+                try {
+                    const extractedJSON = JSON.parse(match[0]); 
+                    console.log("the new answer is:", extractedJSON.agentResponse);
+                    answer = extractedJSON;
+                } catch (error) {
+                    console.error("Invalid JSON:", error);
+                    answer = { agentResponse: tempString }; 
+                }
+            } else {
+                answer = { agentResponse: tempString }; 
+            }
+            console.log("case 2", typeof answer);
+            console.log("the answer is:", answer);
+           }
+           return res.json({
+            data:answer || "I am really sorry we couldn't process your request at the moment. \n Please Try Again Later",
+            agentResponse:true,
+            isParsed:isParsed
+           })
+        } catch (error) {
+            console.error("Agent execution error:", error);
+            return res.status(500).json({ error: "Failed to process request", details: error });
+        }
+})

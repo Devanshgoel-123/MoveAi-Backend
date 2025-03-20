@@ -2,14 +2,14 @@ import { tool } from "@langchain/core/tools";
 import { z as Zod } from "zod";
 import { PrismaClient } from "@prisma/client";
 import dotenv from "dotenv";
-import { InitializeAgent } from "../../api/Agent/route";
+import { InitializeAgent } from "../Routes/Agent";
 import { HumanMessage } from "@langchain/core/messages";
 import { 
   fetchTokenPriceInUsd, 
   fetchSupportedTokens, 
   getTokenAmountOwnedByAccount 
-} from "../Backend/Common/Token";
-import { ACCOUNT_ADDRESS } from "../Backend/Common/Constants";
+} from "../Components/Common/Token";
+import { ACCOUNT_ADDRESS } from "../Components/Common/Constants";
 dotenv.config();
 const prisma = new PrismaClient();
 
