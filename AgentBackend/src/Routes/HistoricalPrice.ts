@@ -4,13 +4,13 @@ import express from "express";
 import dotenv from "dotenv";
 import { Request,Response } from "express";
 dotenv.config()
-const historicalPriceRouter=express.Router();
+export const HistoricalPriceRouter=express.Router();
 
 
-historicalPriceRouter.get("/",async (req:Request,res:Response):Promise<any>=>{
+HistoricalPriceRouter.get("/:tokenId",async (req:Request,res:Response):Promise<any>=>{
     try {
         const timeTo=new Date().getTime()/1000;
-        const { tokenId } = req.body;
+        const { tokenId } = req.params;
         const timeFrom=(new Date().getTime()/1000)-(6*30*86400);
         const url = `https://api.coingecko.com/api/v3/coins/${tokenId}/market_chart/range?vs_currency=usd&from=${timeFrom}&to=${timeTo}&precision=4`;
         const headers = {

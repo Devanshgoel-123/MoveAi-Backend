@@ -9,7 +9,7 @@ import { fetchTopPoolsOnNetwork } from "../Components/Functions/FetchTopPool";
 export const TrendingPoolRouter=express.Router();
 
 
-TrendingPoolRouter.get("/",async (req:Request,res:Response):Promise<any>=>{
+TrendingPoolRouter.get("/:tokenName",async (req:Request,res:Response):Promise<any>=>{
     try{
         const { tokenName } = req.params;
         const poolData=await fetchTopPoolsOnNetwork(tokenName as string);

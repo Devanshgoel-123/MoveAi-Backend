@@ -7,7 +7,7 @@ import { Request,Response } from "express";
 import { config } from "../Components/Common/Constants";
 import { HumanMessage } from "@langchain/core/messages";
 dotenv.config()
-const LendingBorrowingRouter=express.Router();
+export const LendingBorrowingRouter=express.Router();
 
  LendingBorrowingRouter.post("/:tokenName",async (req: Request, res: Response):Promise<any> => {
     try {

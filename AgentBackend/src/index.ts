@@ -1,13 +1,26 @@
 import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
 import { agentRouter } from "./Routes/Agent";
+import { MarketAnalysisRouter } from "./Routes/MarketAnalysis";
+import { HistoricalPriceRouter } from "./Routes/HistoricalPrice";
+import { LendingBorrowingRouter } from "./Routes/LendingBorrowing";
+import { TrendingPoolRouter } from "./Routes/TrendingPool";
+import { UserPortfolioRouter } from "./Routes/UserPortfolio";
+import bodyParser from "body-parser";
 import cors from "cors";
 dotenv.config();
 
 const app: Express = express();
 app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/agent",agentRouter)
-const port = process.env.PORT || 5174;
+app.use("/marketAnalysis",MarketAnalysisRouter)
+app.use("/historicalPrice",HistoricalPriceRouter)
+app.use("/lendingBorrow",LendingBorrowingRouter)
+app.use("/trendingPool",TrendingPoolRouter)
+app.use("/userPortfolio",UserPortfolioRouter)
+const port = process.env.PORT || 3002;
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Express + TypeScript Server");
