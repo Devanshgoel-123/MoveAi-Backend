@@ -1,3 +1,7 @@
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { ChatAnthropic } from "@langchain/anthropic";
+import dotenv from "dotenv";
+dotenv.config()
 export const DEFAULT_STABLE = 50;
 export const DEFAULT_NATIVE = 30;
 export const DEFAULT_OTHER = 30;
@@ -10,3 +14,14 @@ export const config = {
       thread_id: `aptos-agent-1` 
     } 
   };
+
+
+// export const llm = new ChatAnthropic({
+// 			model: "claude-3-5-sonnet-latest",
+// 			anthropicApiKey: process.env.ANTHROPIC_API_KEY,
+// 		})
+  export const llm=new ChatGoogleGenerativeAI({
+      model:"gemini-2.0-flash",
+      apiKey:`${process.env.GEMINI_API_KEY}`,
+      maxRetries:2
+    })

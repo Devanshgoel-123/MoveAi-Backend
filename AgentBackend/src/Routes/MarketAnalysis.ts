@@ -9,7 +9,7 @@ import {
 	PrivateKeyVariants,
 } from "@aptos-labs/ts-sdk"
 import { MemorySaver } from "@langchain/langgraph";
-import { AgentRuntime, AptosAccountAddressTool, AptosGetTokenPriceTool } from "move-agent-kit"
+import { AgentRuntime, AptosAccountAddressTool, AptosGetTokenPriceTool, EchoStakeTokenTool, JouleGetPoolDetails, ThalaStakeTokenTool } from "move-agent-kit"
 import { ChatAnthropic } from "@langchain/anthropic"
 import dotenv from "dotenv"
 import { createReactAgent } from "@langchain/langgraph/prebuilt"
@@ -20,6 +20,7 @@ import { CoinGeckoId } from "../Types";
 import { getHistoricalPrice } from "../Components/Functions/PriceHistory";
 import express from "express";
 import { Request,Response } from "express";
+import { getTokenAmountOwnedByAccount } from "../Components/Common/Token";
 import { ACCOUNT_ADDRESS } from "../Components/Common/Constants";
 dotenv.config()
 
@@ -214,6 +215,7 @@ MarketAnalysisRouter.get("/:tokenName",async (req:Request,res:Response):Promise<
                anthropicApiKey: process.env.ANTHROPIC_API_KEY,
            })
            const memory5 = new MemorySaver()
+           const tokenAmount = (await getTokenAmountOwnedByAccount(ACCOUNT_ADDRESS, token.token_address))/(10**token.decimals);
            // console.log(await agentRuntime?.getUserAllPositions(ACCOUNT_ADDRESS as unknown as AccountAddress))
            // console.log(await agentRuntime?.getPoolDetails(token.token_address))
            // console.log(await agentRuntime.getTokenByTokenName(tokenName))
@@ -222,20 +224,89 @@ MarketAnalysisRouter.get("/:tokenName",async (req:Request,res:Response):Promise<
                tools:[
                    new AptosGetTokenPriceTool(agentRuntime),
                    new AptosAccountAddressTool(agentRuntime),
+                  //  new JouleGetPoolDetails(agentRuntime),
+                  //  new ThalaStakeTokenTool(agentRuntime),
+                  //  new EchoStakeTokenTool(agentRuntime)
                ],
                checkpointSaver: memory5,
-               messageModifier: `
-                You are an expert DeFi Analyst Agent specializing in cryptocurrency analysis.
-       Your purpose is to provide structured, detailed insights on token performance.
-       use historical Prices also for market analysis ${historicalPrices}
-       
-       Guidelines:
-       - Focus on key metrics: TVL, Market Cap, Risk Score, Liquidity.
-       - Never predict future prices.
-       - Offer risk assessments based on historical trends.
-       - If the token is high risk, suggest stablecoin hedging but do not take action.
-       - Ensure responses are structured, professional, and readable.
-               `,
+              //  messageModifier: `
+              //  You are an expert DeFi Analyst Agent specializing in cryptocurrency analysis on the Aptos blockchain. Your purpose is to deliver precise, structured, and actionable insights on token performance that will directly benefit users making investment decisions.
+               
+              //  Guidelines:
+              //  - Analyze key metrics: Total Value Locked (TVL), Market Capitalization, Liquidity, and Volume.
+              //  - Thoroughly scan all major Aptos protocols (Thala, Joule, Echo) where users can generate yield through staking, lending, or liquidity provision for ${tokenName}.
+              //  - For each protocol, provide specific details on:
+              //    * Current APY/APR rates for staking or liquidity pools
+              //    * Lock-up periods and unstaking timeframes
+              //    * Any rewards or additional tokens earned
+              //    * Fee structures that might impact returns
+              //    * Protocol-specific risks (smart contract risk, impermanent loss potential)
+              //  - Calculate a Risk Score (0-100) by combining the Fear and Greed Index value (${value}) with liquidity and volatility metrics. Classify as Low (0-30), Moderate (31-60), or High (61-100).
+              //  - Provide a data-backed recommendation on whether to hold, sell, or stake the token.
+              //  - Compare staking opportunities across protocols to identify the best risk-adjusted returns.
+              //  - Use the user's current balance of ${tokenAmount/10**8} ${tokenName} to provide personalized yield projections.
+              //  - Never predict specific future prices, but analyze recent price action for relevant insights.
+              //  - Present concrete data rather than vague statements or generic advice.
+               
+              //  Response Format:
+              //  {
+              //    "tokenPriceUsd": "${tokenPriceUsd} USD",
+              //    "marketCap": "<value or 'Data unavailable'>",
+              //    "tvl": "<value or 'Data unavailable'>",
+              //    "liquidity": "<value or 'Data unavailable'>",
+              //    "riskScore": "<score> (<classification>)",
+              //    "riskExplanation": "<detailed reasoning based on concrete metrics>",
+              //    "historicalPerformance": "<insights from ${historicalPrices}>",
+              //    "userBalance": "${tokenAmount} ${tokenName} (≈ $<USD value>)",
+              //    "stakingOpportunities": [
+              //      {
+              //        "protocol": "<e.g., Thala, Joule, Echo>",
+              //        "type": "<Staking, Liquidity Pool, Lending>",
+              //        "apy": "<current rate>",
+              //        "lockPeriod": "<duration or 'None'>",
+              //        "unstakingProcess": "<timeframe and any penalties>",
+              //        "rewards": "<additional tokens earned>",
+              //        "risks": "<specific protocol risks>",
+              //        "projectedYield": "<based on user balance>",
+              //        "link": "<resource to learn more>"
+              //      }
+              //    ],
+              //    "bestYieldOption": "<recommended protocol and strategy based on risk/reward>",
+              //    "recommendation": "<Hold, Sell, or Stake> - <specific reasoning with data>",
+              //    "actionableSteps": ["<step-by-step instructions if user wants to follow recommendation>"]
+              //  }
+              //  `
+              messageModifier: `
+              You are an expert DeFi Analyst Agent specializing in cryptocurrency analysis on the Aptos blockchain. Your purpose is to deliver precise, structured, and actionable insights on token performance that will directly benefit users making investment decisions.
+              
+              Guidelines:
+              - Analyze key metrics: Total Value Locked (TVL), Market Capitalization, Liquidity, and Volume.
+              - Thoroughly scan all major Aptos protocols (Thala, Joule, Echo, Aries only) where users can generate yield through staking, lending, or liquidity provision for ${tokenName}.
+              - For each protocol, provide specific details on:
+                * Current APY/APR rates for staking or liquidity pools
+                * Lock-up periods and unstaking timeframes
+                * Any rewards or additional tokens earned
+                * Fee structures that might impact returns
+                * Protocol-specific risks (smart contract risk, impermanent loss potential)
+              - Calculate a Risk Score (0-100) by combining the Fear and Greed Index value (${value}) with liquidity and volatility metrics. Classify as Low (0-30), Moderate (31-60), or High (61-100).
+              - Provide a data-backed recommendation on whether to hold, sell, or stake the token.
+              - Compare staking opportunities across protocols to identify the best risk-adjusted returns suggesting the name of protocols and the percentage to allocate to that protocol.
+              - Use the user's current balance of ${tokenAmount} ${tokenName} to provide personalized yield projections.
+              - Never predict specific future prices, but analyze recent price action for relevant insights.
+              - Present concrete data rather than vague statements or generic advice.
+              
+              IMPORTANT: Format your response for direct display on frontend:
+              1. Use markdown formatting with # and ## for headers
+              2. Use bullet points (•) for lists 
+              3. Add clear section breaks between major segments
+              4. Include spacing for readability
+              5. Use bold for important values like risk score, user balance
+              6. Organize information hierarchically with visual structure
+              7. Keep formatting consistent throughout
+              
+              Response Format (include everything in JSON format):
+              When formatting the agentResponse, replace placeholders with actual values and ensure all line breaks (\\n) are included for proper frontend rendering. The agentResponse field should contain the complete, formatted analysis ready for direct display.
+              `
            })
            const response=[];
            const config = { 
@@ -243,6 +314,18 @@ MarketAnalysisRouter.get("/:tokenName",async (req:Request,res:Response):Promise<
                  thread_id: `aptos-agent-1` 
                } 
              };
+            //  {
+            //   "tokenPriceUsd": "${tokenPriceUsd} USD",
+            //   "marketCap": "<value or 'Data unavailable'>",
+            //   "tvl": "<value or 'Data unavailable'>",
+            //   "liquidity": "<value or 'Data unavailable'>",
+            //   "riskScore": "<score> (<classification>)",
+            //   "riskExplanation": "<detailed reasoning based on concrete metrics>",
+            //   "historicalPerformance": "<insights from ${historicalPrices}>",
+            //   "userBalance": "${tokenAmount} ${tokenName} (≈ $<USD value>)",
+            //   "bestYieldOption": "<recommended protocol and strategy based on risk/reward>",
+            //   "displayText": "# ${tokenName} Analysis\\n\\n## Key Metrics\\n• Price: **${tokenPriceUsd} USD**\\n• Market Cap: **<market cap>**\\n• TVL: **<tvl>**\\n• Liquidity: **<liquidity>**\\n• Risk Score: **<score> (<classification>)**\\n\\n## Risk Assessment\\n<formatted risk explanation with bullet points>\\n\\n## Historical Performance\\n<formatted historical analysis with bullet points>\\n\\n## Staking Opportunities\\n\\n### <Protocol 1>\\n• Type: <type>\\n• APY: **<rate>**\\n• Lock Period: <period>\\n• Risks: <risks>\\n• Projected Yield: **<yield>**\\n\\n### <Protocol 2>\\n<same format as above>\\n\\n## Best Yield Option\\n<formatted recommendation>\\n\\n## Recommendation: <HOLD/SELL/STAKE>\\n<bulleted reasoning>\\n\\n"
+            // }
            const stream = await agent.stream(
                {
                  messages: [
@@ -304,8 +387,8 @@ MarketAnalysisRouter.get("/:tokenName",async (req:Request,res:Response):Promise<
               data:answer || "I am really sorry we couldn't process your request at the moment. \n Please Try Again Later",
               agentResponse:true,
               isParsed:isParsed,
-              position:agentRuntime?.getUserAllPositions(ACCOUNT_ADDRESS as unknown as AccountAddress),
-              detailsPool:agentRuntime?.getPoolDetails(token.token_address)
+              // position:agentRuntime?.getUserAllPositions(ACCOUNT_ADDRESS as unknown as AccountAddress),
+              // detailsPool:agentRuntime?.getPoolDetails(token.token_address)
              })
         } catch (error) {
        console.log(error)

@@ -6,16 +6,14 @@ import { ChatAnthropic } from "@langchain/anthropic";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { MemorySaver } from "@langchain/langgraph";
 import { config } from "dotenv";
+import { llm } from "../Common/Constants";
 import { HumanMessage } from "@langchain/core/messages";
 config();
 
 export const YieldOptimizationTool = tool(
   async ({ tokenName, riskTolerance, amount }) => {
     try {
-      const llm = new ChatAnthropic({
-        model: "claude-3-5-sonnet-latest",
-        anthropicApiKey: process.env.ANTHROPIC_API_KEY,
-      });
+      
       const memory = new MemorySaver();
       const config = { 
 		configurable: { 
