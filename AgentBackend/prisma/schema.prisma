@@ -32,5 +32,6 @@ model Token{
   chain_id Int 
   decimals Int
   type String 
+  image String  @default("default.png")
 }
 
