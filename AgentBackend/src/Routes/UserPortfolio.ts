@@ -16,7 +16,7 @@ UserPortfolioRouter.get("/",async (req:Request,res:Response):Promise<any>=>{
         const userAllocations= calculateCurrentAllocation(userPortfolio)
         console.log("the user portfolio is",userPortfolio);
         console.log("the user allocations are",userAllocations);
-	  return res.json({
+	    return res.json({
         userPortfolio,
 	  });
     }catch(err){
