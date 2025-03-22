@@ -59,11 +59,8 @@ export async function fetchSupportedTokens(): Promise<SupabaseToken[]> {
 //     "image":"https://coin-images.coingecko.com/coins/images/29697/large/THL_Logomark.png?1728418092"
 //   },
 // ]
-        const enrichedTokenData = tokenData.map(token => ({
-            ...token,
-            image: token.image || "default-image-url" // Provide a default image URL if missing
-        }));
-        return enrichedTokenData as SupabaseToken[] || [];
+  
+        return tokenData as SupabaseToken[] || [];
     }catch(error){
         console.error('Error fetching tokens:', error);
         throw new Error(`Failed to fetch supported tokens: ${error}`);

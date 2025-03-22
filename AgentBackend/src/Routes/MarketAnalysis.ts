@@ -79,58 +79,11 @@ MarketAnalysisRouter.get("/:tokenName",async (req:Request,res:Response):Promise<
                tools:[
                    new AptosGetTokenPriceTool(agentRuntime),
                    new AptosAccountAddressTool(agentRuntime),
-                  //  new JouleGetPoolDetails(agentRuntime),
-                  //  new ThalaStakeTokenTool(agentRuntime),
-                  //  new EchoStakeTokenTool(agentRuntime)
+                   new JouleGetPoolDetails(agentRuntime),
+                  new ThalaStakeTokenTool(agentRuntime),
+                  new EchoStakeTokenTool(agentRuntime)
                ],
                checkpointSaver: memory5,
-              //  messageModifier: `
-              //  You are an expert DeFi Analyst Agent specializing in cryptocurrency analysis on the Aptos blockchain. Your purpose is to deliver precise, structured, and actionable insights on token performance that will directly benefit users making investment decisions.
-               
-              //  Guidelines:
-              //  - Analyze key metrics: Total Value Locked (TVL), Market Capitalization, Liquidity, and Volume.
-              //  - Thoroughly scan all major Aptos protocols (Thala, Joule, Echo) where users can generate yield through staking, lending, or liquidity provision for ${tokenName}.
-              //  - For each protocol, provide specific details on:
-              //    * Current APY/APR rates for staking or liquidity pools
-              //    * Lock-up periods and unstaking timeframes
-              //    * Any rewards or additional tokens earned
-              //    * Fee structures that might impact returns
-              //    * Protocol-specific risks (smart contract risk, impermanent loss potential)
-              //  - Calculate a Risk Score (0-100) by combining the Fear and Greed Index value (${value}) with liquidity and volatility metrics. Classify as Low (0-30), Moderate (31-60), or High (61-100).
-              //  - Provide a data-backed recommendation on whether to hold, sell, or stake the token.
-              //  - Compare staking opportunities across protocols to identify the best risk-adjusted returns.
-              //  - Use the user's current balance of ${tokenAmount/10**8} ${tokenName} to provide personalized yield projections.
-              //  - Never predict specific future prices, but analyze recent price action for relevant insights.
-              //  - Present concrete data rather than vague statements or generic advice.
-               
-              //  Response Format:
-              //  {
-              //    "tokenPriceUsd": "${tokenPriceUsd} USD",
-              //    "marketCap": "<value or 'Data unavailable'>",
-              //    "tvl": "<value or 'Data unavailable'>",
-              //    "liquidity": "<value or 'Data unavailable'>",
-              //    "riskScore": "<score> (<classification>)",
-              //    "riskExplanation": "<detailed reasoning based on concrete metrics>",
-              //    "historicalPerformance": "<insights from ${historicalPrices}>",
-              //    "userBalance": "${tokenAmount} ${tokenName} (≈ $<USD value>)",
-              //    "stakingOpportunities": [
-              //      {
-              //        "protocol": "<e.g., Thala, Joule, Echo>",
-              //        "type": "<Staking, Liquidity Pool, Lending>",
-              //        "apy": "<current rate>",
-              //        "lockPeriod": "<duration or 'None'>",
-              //        "unstakingProcess": "<timeframe and any penalties>",
-              //        "rewards": "<additional tokens earned>",
-              //        "risks": "<specific protocol risks>",
-              //        "projectedYield": "<based on user balance>",
-              //        "link": "<resource to learn more>"
-              //      }
-              //    ],
-              //    "bestYieldOption": "<recommended protocol and strategy based on risk/reward>",
-              //    "recommendation": "<Hold, Sell, or Stake> - <specific reasoning with data>",
-              //    "actionableSteps": ["<step-by-step instructions if user wants to follow recommendation>"]
-              //  }
-              //  `
               messageModifier: `
               You are an expert DeFi Analyst Agent specializing in cryptocurrency analysis on the Aptos blockchain. Your purpose is to deliver precise, structured, and actionable insights on token performance that will directly benefit users making investment decisions.
               
