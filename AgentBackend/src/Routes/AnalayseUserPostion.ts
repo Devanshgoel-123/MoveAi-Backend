@@ -10,7 +10,7 @@ import {
 import { config } from "../Components/Common/Constants"
 import dotenv from "dotenv"
 import { createReactAgent } from "@langchain/langgraph/prebuilt"
-import { EchelonBorrowTokenTool, EchelonWithdrawTokenTool, JouleBorrowTokenTool, JouleLendTokenTool, JouleWithdrawTokenTool, LocalSigner } from "move-agent-kit"
+import { EchelonBorrowTokenTool, EchelonWithdrawTokenTool, JouleBorrowTokenTool, JouleLendTokenTool, JouleWithdrawTokenTool, LocalSigner, PanoraSwapTool } from "move-agent-kit"
 import { MemorySaver } from "@langchain/langgraph"
 import { HumanMessage } from "@langchain/core/messages"
 import express, { Router,Request,Response } from "express";
@@ -48,34 +48,87 @@ export const UserPostionAnalysisAgent = async () => {
         new JouleBorrowTokenTool(agentRuntime),
         new JouleLendTokenTool(agentRuntime),
         new JouleWithdrawTokenTool(agentRuntime),
+        new PanoraSwapTool(agentRuntime)
       ],
 			checkpointSaver: memory5,
-            messageModifier:`
-    The agent's primary goal is to analyze the user's positions on supported protocols and suggest necessary actions if required. Follow these rules:
-     Use the UserPositionTool to get the market Data, the user Position on various Protocols and then perform the following
-    1. **Analyze User Positions**: Evaluate the user's holdings on supported protocols using the **UserPositionTool**.
-    2. **Identify Risky or Loss-Making Positions**: If a position is causing a loss or is inefficient, suggest moving assets.
-    3. **Recommend Necessary Transactions**:
-       - If assets should be moved, specify the transaction details.
-       - Suggest a better staking/lending/borrowing alternative if available.
-       - If asset conversion is beneficial, recommend swapping to another token before reinvesting.
-    4. **Answer Any User Queries**: If the user asks a general query, respond accurately while maintaining context.
-
-    The response should always be structured in the following JSON format:
-    \`\`\`json
-    {
-      "analysis": "<brief summary of the user's financial position>",
-      "recommendedAction": {
-        "actionRequired": <true/false>,
-        "transactionDetails": "<description of the suggested transaction>",
-        "justification": "<reasoning behind the recommendation>"
-      },
-      "userQueryResponse": "<response to any general query>"
-    }
-    \`\`\`
+//             messageModifier:`
+//     The agent's primary goal is to analyze the user's positions on supported protocols and suggest necessary actions if required. Follow these rules:
+//      Use the UserPositionTool to get the market Data, the user Position on various Protocols and then perform the following
+//      Keep in mind that we only support usdc, usdt, weth, apt and thl token. Don't recommend any other token for yield oppurtunities.
+//      Always Answer in short response but complete every action.
+//     1. **Analyze User Positions**: Evaluate the user's holdings on supported protocols using the **UserPositionTool**.
+//     2. **Identify Risky or Loss-Making Positions**: If a position is causing a loss or is inefficient, suggest moving assets.
+//     3. **Recommend Necessary Transactions**:
+//        - If assets should be moved, specify the transaction details.
+//        - Suggest a better lending/borrowing alternative if available.
+//        - If asset conversion is beneficial, recommend swapping to another token before reinvesting.
+//     4. **Answer Any User Queries**: If the user asks a general query, respond accurately while maintaining context.
+//     5. 
+//     The response should always be structured in the following JSON format:
+//     \`\`\`json
+//     {
+//       "analysis": "<brief summary of the user's financial position>",
+//       "recommendedAction": {
+//         "actionRequired": <true/false>,
+//         "transactionDetails": "<description of the suggested transaction in very short >",
+//         "justification": "<reasoning behind the recommendation>",
+//         "net profit":"<net profit through the traxn"
+//       },
+//       "userQueryResponse": "<response to any general query>",
+//       swap:[
+//         **token1 -> token2 ** "<amount of token1 to swap for token2>"
+//       ]
+//     }
+//     \`\`\`
     
-    Only suggest transactions if they are necessary. Keep recommendations clear and actionable while avoiding unnecessary details.
-  `
+//     Only suggest transactions if they are necessary. Keep recommendations clear and actionable while avoiding unnecessary details.
+//     Ask the user if they want to convert their tokens then go ahead with the swapping using **PanoraSwapTool**
+//   `
+messageModifier: `
+  The agent's primary goal is to analyze the user's positions on supported protocols and suggest necessary actions if required. Follow these rules:
+  
+  - Use the **UserPositionTool** to fetch market data and the user's positions across protocols.
+  - Only support **USDC, USDT, WETH, APT, and THL** tokens. Do not recommend any other tokens for yield opportunities.
+  - Provide a **concise** but **complete** response for every action.
+
+  **Steps to Follow:**
+  1. **Analyze User Positions**: Evaluate the user's holdings using **UserPositionTool**.
+  2. **Identify Risky or Loss-Making Positions**: If a position is inefficient or causing a loss, suggest moving assets.
+  3. **Recommend Necessary Transactions**:
+     - If assets should be moved, specify **transaction details**.
+     - Suggest better lending/borrowing alternatives if available.
+     - If asset conversion is beneficial, recommend swapping tokens before reinvesting.
+  4. **Answer Any User Queries**: If the user asks a general question, respond accurately while maintaining context.
+  5. **Execute Token Swaps (if required)**:
+     - If a swap is necessary, ask for **user confirmation** before proceeding.
+     - Use **PanoraSwapTool** to execute the swap.
+
+  **Response Format (Always in JSON):**
+  \`\`\`json
+  {
+    "analysis": "<Brief summary of the user's financial position>",
+    "recommendedAction": {
+      "actionRequired": <true/false>,
+      "transactionDetails": "<Short description of the suggested transaction>",
+      "justification": "<Reasoning behind the recommendation>",
+      "netProfit": "<Estimated net profit from the transaction>"
+    },
+    "userQueryResponse": "<Response to any general query>",
+    "swap": [
+      {
+        "from": "<Token1>",
+        "to": "<Token2>",
+        "amount": <Amount of Token1 to swap>
+      }
+    ]
+  }
+  \`\`\`
+
+  **Important Rules:**
+  - **Only suggest transactions if necessary**. Do not recommend swaps or lending unless they improve the user's position.
+  - Always **ask for confirmation** before swapping tokens.
+  - Keep the response **structured**, **clear**, and **actionable** while avoiding unnecessary details.
+`
 		})
 		return { agent, account, agentRuntime };
 	}catch(err){
@@ -161,3 +214,7 @@ userPositionRouter.post("/", async (req: Request, res: Response):Promise<any> =>
             return res.status(500).json({ error: "Failed to process request", details: error });
         }
 })
+
+
+
+//Find me the the best yield generating oppurtunitites for apt token with a high risk tolerance
