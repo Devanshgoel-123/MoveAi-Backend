@@ -59,7 +59,12 @@ export async function getUserDiversificationPreference(walletAddress: string): P
     const preference = await prisma.userPortfolioPreference.findUnique({
       where: { walletAddress }
     });
-    
+    // const preference={
+    //   walletAddress:"0x5bafe2c53415743947065e902274f85e6300e9fb27d21bc29c2ce217ea0b37c2",
+    //   StablePercentage:43,
+    //   NativePercentage:44,
+    //   OtherPercentage:11
+    // }
     if (!preference) return null;
     
     return {
@@ -305,7 +310,8 @@ export const PortfolioRebalancerTool = tool(
     otherPercentage,
   }) => {
     try {
-      await RebalancerReusableFunction(stablecoinPercentage,nativePercentage,otherPercentage);
+      const response=await RebalancerReusableFunction(stablecoinPercentage,nativePercentage,otherPercentage);
+      return response
     } catch (error) {
       console.error("Portfolio rebalancing failed:", error);
       return {
@@ -387,11 +393,14 @@ export const PortfolioRebalancerTool = tool(
         };
       }
       const swapResults = [];
+      const res=await Promise.all(requiredSwaps.map(async (item)=>{
+        return executeSwap(item)
+      }))
         await saveUserPreference(accountAddress, targetAllocation);
-
+       console.log(res)
       return {
         success: true,
-        message: `Please perform the required Swaps ${requiredSwaps} or instruct the agent to do these swap individually on your behalf.`,
+        message: `Swapped the required assets on your behalf, swap successful.`,
         currentAllocation,
         targetAllocation,
         userPortfolio,
