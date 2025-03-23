@@ -15,7 +15,8 @@ export const getAllMarketsDataEchelon=async ()=>{
     const markets = await client.getAllMarkets();
     const marketData = await Promise.all(
         markets.map(async (market) => {
-            const supply = (await client.getAccountSupply(ACCOUNT_ADDRESS, market)) || 0;
+            const temp =(await client.getAccountSupply(ACCOUNT_ADDRESS, market)) || 0;
+            const supply = temp / 1e6;
             const supplyApr = await client.getSupplyApr(market);
             const coin = await client.getMarketCoin(market);
             const borrowApr=await client.getBorrowApr(market)
@@ -24,7 +25,7 @@ export const getAllMarketsDataEchelon=async ()=>{
         })
     );
     const marketDataFiltered=marketData.filter((item)=>{
-        return item?.coin.toLowerCase().includes("usdc") || item?.coin.toLowerCase().includes("usdt") || item?.coin.toLowerCase().includes("apt") || item?.coin.toLowerCase().includes("weth") || item?.coin.toLowerCase().includes("thl")
+        return item?.coin.toLowerCase().includes("usdc") || item?.coin.toLowerCase().includes("usdt") || item?.coin.toLowerCase().includes("aptos") || item?.coin.toLowerCase().includes("weth") || item?.coin.toLowerCase().includes("thl")
     })
     console.log("market data is:",marketDataFiltered)
     const userPositions = marketDataFiltered.filter((item)=>{
