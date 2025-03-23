@@ -30,6 +30,7 @@
     "@langchain/google-genai": "^0.1.11",
     "@langchain/langgraph": "^0.2.57",
     "@langchain/openai": "^0.4.5",
+    "@martiandao/aptos-web3.js": "^3.0.7",
     "@panoraexchange/swap-sdk": "^1.0.8",
     "@prisma/client": "^6.5.0",
     "body-parser": "^1.20.3",

@@ -35,3 +35,9 @@ model Token{
   image String  @default("default.png")
 }
 
+model User{
+  id Int @id @default(autoincrement())
+  primaryWalletAddress String @unique
+  agentWalletAddress String @unique
+  privateKey String @unique
+}

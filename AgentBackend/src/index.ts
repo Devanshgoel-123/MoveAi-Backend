@@ -10,6 +10,7 @@ import bodyParser from "body-parser";
 import { userPositionRouter } from "./Routes/AnalayseUserPostion";
 import { userPoolRouter } from "./Routes/getUserPositons";
 import { lendBorrowRouterPost } from "./Routes/LendBorrow";
+import { walletRouter } from "./Routes/Wallet";
 import cors from "cors";
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.use("/userPortfolio",UserPortfolioRouter)
 app.use("/userAnalysis",userPositionRouter) //this is for the yield agent
 app.use("/getUserPoolData",userPoolRouter)
 app.use("/lendBorrowPost",lendBorrowRouterPost)
+app.use("/walletRouter",walletRouter)
 const port = process.env.PORT || 3002;
 
 app.get("/", (req: Request, res: Response) => {
