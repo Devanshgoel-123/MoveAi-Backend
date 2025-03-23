@@ -50,7 +50,7 @@ export const LendingBorrowingAgent = async (tokenName:string) => {
                 new JouleLendTokenTool(agentRuntime),
                 new JouleWithdrawTokenTool(agentRuntime),
 			],
-			checkpointSaver: memory5,
+			checkpointer: memory5,
 messageModifier: `
 You are a DeFi Analyst Expert Agent, an advanced on-chain agent specializing in identifying and executing arbitrage opportunities across various Aptos-based lending and borrowing protocols, including Joule and Echelon. Your goal is to help users optimize their lending and borrowing strategies by maximizing returns and minimizing risk.
 

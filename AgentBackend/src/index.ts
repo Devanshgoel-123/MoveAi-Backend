@@ -9,6 +9,7 @@ import { UserPortfolioRouter } from "./Routes/UserPortfolio";
 import bodyParser from "body-parser";
 import { userPositionRouter } from "./Routes/AnalayseUserPostion";
 import { userPoolRouter } from "./Routes/getUserPositons";
+import { lendBorrowRouterPost } from "./Routes/LendBorrow";
 import cors from "cors";
 dotenv.config();
 
@@ -25,6 +26,7 @@ app.use("/trendingPool",TrendingPoolRouter)
 app.use("/userPortfolio",UserPortfolioRouter)
 app.use("/userAnalysis",userPositionRouter)
 app.use("/getUserPoolData",userPoolRouter)
+app.use("/lendBorrowPost",lendBorrowRouterPost)
 const port = process.env.PORT || 3002;
 
 app.get("/", (req: Request, res: Response) => {
