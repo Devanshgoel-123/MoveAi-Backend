@@ -24,7 +24,7 @@ app.use("/historicalPrice",HistoricalPriceRouter)
 app.use("/lendingBorrow",LendingBorrowingRouter)
 app.use("/trendingPool",TrendingPoolRouter)
 app.use("/userPortfolio",UserPortfolioRouter)
-app.use("/userAnalysis",userPositionRouter)
+app.use("/userAnalysis",userPositionRouter) //this is for the yield agent
 app.use("/getUserPoolData",userPoolRouter)
 app.use("/lendBorrowPost",lendBorrowRouterPost)
 const port = process.env.PORT || 3002;

@@ -43,12 +43,10 @@ export const LendingBorrowingAgent = async (tokenName:string) => {
 		const agent = createReactAgent({
 			llm,
 			tools:[
-				new EchelonBorrowTokenTool(agentRuntime),
-                new EchelonLendTokenTool(agentRuntime),
-                new AriesBorrowTool(agentRuntime),
-                new AriesLendTool(agentRuntime),
-                new JouleLendTokenTool(agentRuntime),
-                new JouleWithdrawTokenTool(agentRuntime),
+				// new EchelonBorrowTokenTool(agentRuntime),
+                // new EchelonLendTokenTool(agentRuntime),
+                // new JouleLendTokenTool(agentRuntime),
+                // new JouleWithdrawTokenTool(agentRuntime),
 			],
 			checkpointer: memory5,
 messageModifier: `

@@ -44,19 +44,30 @@ export const JouleFinanceMarketData=async ()=>{
 	try{
 		const response=await axios.get("https://price-api.joule.finance/api/market")
 		const marketData=response.data.data;
+		const userData: any = await JouleFinanceUserData();
 		const filteredData=marketData.filter((item:any)=>{
 			return item?.asset.assetName.toLowerCase().includes("usdc") || item?.asset.assetName.toLowerCase().includes("usdt") || item?.asset.assetName.toLowerCase().includes("aptos") || item?.asset.assetName.toLowerCase().includes("weth") || item?.asset.assetName.toLowerCase().includes("thl")
 		})
-		const finalData=filteredData.map((item:any)=>{
+		let finalData=filteredData.map((item:any)=>{
 			return {
-				coin:`::apt::${item.asset.assetName}`,
+				coin: item.priceInfo.tokenAddress,
 				borrowApr:item.borrowApy,
 				supplyApr:item.depositApy,
 				coinPrice:item.priceInfo.price
 			}
 		})
-		
-		return finalData
+		finalData = finalData.filter((item: any) => {
+			const match = userData.some((userItem: any) => {
+			  if (item.coin.toLowerCase() === userItem.tokenAddress.toLowerCase()) {
+				item.supply = userItem.amount / 1e6;
+				item.type = userItem.type;
+				return true;
+			  }
+			  return false;
+			});
+			return match;
+		  });
+		return finalData;
 	}catch(err){
 		console.log(err)
 	}
@@ -74,8 +85,7 @@ interface Position {
     const userPosition=jouleUserData[0];
 	  userPosition.user_position_ids.forEach((positionId: string) => {
 		const positionData = userPosition.positions_map.data.find((p: any) => p.key === positionId);
-		if (positionData) {
-		
+		if (positionData) {	
 		  positionData.value.lend_positions.data.forEach((lend: any) => {
 			positions.push({
 			  positionId,
