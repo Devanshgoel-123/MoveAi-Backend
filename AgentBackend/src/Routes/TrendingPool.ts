@@ -6,15 +6,20 @@ import dotenv from "dotenv";
 import { Request,Response } from "express";
 dotenv.config()
 import { fetchTopPoolsOnNetwork } from "../Components/Functions/FetchTopPool";
+import { getAllMarketsDataEchelon } from "../Components/DataRoutes/Echelon";
+import {JouleFinanceUserData } from "../Components/DataRoutes/JouleFinance";
 export const TrendingPoolRouter=express.Router();
 
 
 TrendingPoolRouter.get("/:tokenName",async (req:Request,res:Response):Promise<any>=>{
     try{
+        //const data=await getAllMarketsDataEchelon();
+        //const data=await JouleFinanceUserData();
+        // const data=await AriesUserDetails()
         const { tokenName } = req.params;
         const poolData=await fetchTopPoolsOnNetwork(tokenName as string);
         return res.json({
-            data:poolData
+           data:poolData,
         })
     }catch(err){
         console.log("Failed to fetch the top trending pools on the network")

@@ -7,8 +7,11 @@ import { LendingBorrowingRouter } from "./Routes/LendingBorrowing";
 import { TrendingPoolRouter } from "./Routes/TrendingPool";
 import { UserPortfolioRouter } from "./Routes/UserPortfolio";
 import bodyParser from "body-parser";
+import { userPositionRouter } from "./Routes/AnalayseUserPostion";
+import { userPoolRouter } from "./Routes/getUserPositons";
 import cors from "cors";
 dotenv.config();
+
 
 const app: Express = express();
 app.use(cors());
@@ -20,6 +23,8 @@ app.use("/historicalPrice",HistoricalPriceRouter)
 app.use("/lendingBorrow",LendingBorrowingRouter)
 app.use("/trendingPool",TrendingPoolRouter)
 app.use("/userPortfolio",UserPortfolioRouter)
+app.use("/userAnalysis",userPositionRouter)
+app.use("/getUserPoolData",userPoolRouter)
 const port = process.env.PORT || 3002;
 
 app.get("/", (req: Request, res: Response) => {

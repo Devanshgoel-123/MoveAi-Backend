@@ -16,10 +16,10 @@ export const config = {
   };
 
 
-// export const llm = new ChatAnthropic({
-// 			model: "claude-3-5-sonnet-latest",
-// 			anthropicApiKey: process.env.ANTHROPIC_API_KEY,
-// 		})
+ export const Claudellm = new ChatAnthropic({
+			model: "claude-3-5-sonnet-latest",
+			anthropicApiKey: process.env.ANTHROPIC_API_KEY,
+		})
   export const llm=new ChatGoogleGenerativeAI({
       model:"gemini-2.0-flash",
       apiKey:`${process.env.GEMINI_API_KEY}`,
