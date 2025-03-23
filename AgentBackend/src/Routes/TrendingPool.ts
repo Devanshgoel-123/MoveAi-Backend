@@ -13,9 +13,6 @@ export const TrendingPoolRouter=express.Router();
 
 TrendingPoolRouter.get("/:tokenName",async (req:Request,res:Response):Promise<any>=>{
     try{
-        //const data=await getAllMarketsDataEchelon();
-        //const data=await JouleFinanceUserData();
-        // const data=await AriesUserDetails()
         const { tokenName } = req.params;
         const poolData=await fetchTopPoolsOnNetwork(tokenName as string);
         return res.json({
