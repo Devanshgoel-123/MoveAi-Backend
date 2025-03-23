@@ -28,7 +28,7 @@ export const YieldOptimizationTool = tool(
         ],
         checkpointSaver: memory,
         messageModifier: `
-You are YieldOptimizer, an advanced agent designed to maximize returns on ${tokenName} across staking, lending, and borrowing opportunities on the Aptos blockchain. Your goal is to analyze options using only the following protocols: Thala, Joule, Echo, and Ams, consider the user's risk tolerance (${riskTolerance}), and recommend the best yield farming strategy. Here's how you operate:
+You are YieldOptimizer, an advanced agent designed to maximize returns on ${tokenName} across staking, lending, and borrowing opportunities on the Aptos blockchain. Your goal is to analyze options using only the following protocols: Joule, and Echelon. consider the user's risk tolerance (${riskTolerance}), and recommend the best yield farming strategy. Here's how you operate:
 
 ### Responsibilities:
 1. **Analyze Options**: Use the StakeUnstakeBestOpportunityTool and LendingBorrowingBestOpportunityTool to fetch real-time data on staking, lending, and borrowing for ${tokenName}.
@@ -66,7 +66,7 @@ You are YieldOptimizer, an advanced agent designed to maximize returns on ${toke
 `,
       });
 
-      const prompt = `Analyze staking, lending, and borrowing options for ${amount} ${tokenName} with a ${riskTolerance} risk tolerance. Provide a JSON response with a summary, options, and recommendation.`;
+      const prompt = `Analyze lending, and borrowing options for ${amount} ${tokenName} with a ${riskTolerance} risk tolerance.`;
       const response = [];
 	  const stream = await agent.stream(
 		{
@@ -124,10 +124,10 @@ You are YieldOptimizer, an advanced agent designed to maximize returns on ${toke
   {
     name: "YieldOptimizationTool",
     description: `
-      This tool optimizes yield farming strategies for a given token on the aptos chain by analyzing staking, lending, and borrowing opportunities across Aptos protocols like Joule Finance, Aries, Echelon, Echo, Thala and Amnis only no other protocol. It evaluates key metrics such as APY (for staking/lending), APR (for borrowing), lockup periods, collateral requirements, fees, liquidity, and risks. Based on the user's token name, amount, and risk tolerance (low, medium, high), it compares all options in real time and recommends a tailored strategy to maximize returns while aligning with the user's risk profile. The output includes a detailed summary of viable strategies, a top recommendation, and trade-offs (e.g., high yield with long lockup vs. moderate yield with flexibility). Designed for users seeking to optimize their DeFi returns, it supports informed decision-making and can execute strategies step-by-step upon explicit user request.
+      This tool optimizes yield farming strategies for a given token on the aptos chain by analyzing staking, lending, and borrowing opportunities across Aptos protocols like Joule Finance, Echelon only no other protocol. It evaluates key metrics such as APY (for staking/lending), APR (for borrowing), lockup periods, collateral requirements, fees, liquidity, and risks. Based on the user's token name, amount, and risk tolerance (low, medium, high), it compares all options in real time and recommends a tailored strategy to maximize returns while aligning with the user's risk profile. The output includes a detailed summary of viable strategies, a top recommendation, and trade-offs (e.g., high yield with long lockup vs. moderate yield with flexibility). Designed for users seeking to optimize their DeFi returns, it supports informed decision-making and can execute strategies step-by-step upon explicit user request.
     `,
     schema: Zod.object({
-      tokenName: Zod.string().describe("The token to optimize yield for, e.g., APT, USDC, USDT."),
+      tokenName: Zod.string().describe("The token to optimize yield for, e.g., APT, USDC, USDT, WETH, THL."),
       riskTolerance: Zod.enum(["low", "medium", "high"]).describe("The user's risk preference: low (safe), medium (balanced), high (aggressive)."),
       amount: Zod.number().describe("The amount of tokens to allocate for yield farming."),
     }),

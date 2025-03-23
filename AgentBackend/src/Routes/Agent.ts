@@ -9,8 +9,7 @@ import {
 } from "@aptos-labs/ts-sdk"
 import { llm } from "../Components/Common/Constants"
 import { config } from "../Components/Common/Constants"
-import { AgentRuntime, AmnisStakeTool, AmnisWithdrawStakeTool, AptosGetTokenDetailTool, AptosGetTokenPriceTool, createAptosTools, EchoStakeTokenTool, EchoUnstakeTokenTool, JouleGetPoolDetails, JouleGetUserAllPositions, LiquidSwapSwapTool, PanoraSwapTool, ThalaStakeTokenTool, ThalaUnstakeTokenTool } from "move-agent-kit"
-import { ChatAnthropic } from "@langchain/anthropic"
+import { AgentRuntime, AptosGetTokenDetailTool, AptosGetTokenPriceTool, PanoraSwapTool } from "move-agent-kit"
 import dotenv from "dotenv"
 import { createReactAgent } from "@langchain/langgraph/prebuilt"
 import { LocalSigner } from "move-agent-kit"
@@ -26,8 +25,7 @@ import { YieldOptimizationTool } from "../Components/Agents/BestYieldOptimisingA
 import { LendingBorrowingBestOpppurtunityTool } from "../Components/Agents/LendBorrowAgent"
 import express, { Router,Request,Response } from "express";
 import { StakingUnstakingBestOpppurtunityTool } from "../Components/Agents/StakeUnstakeAgent"
-import { OpenAI } from "@langchain/openai"
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai"
+import { Claudellm } from "../Components/Common/Constants"
 dotenv.config()
 export const agentRouter:Router=express.Router();
 export const InitializeAgent = async () => {
@@ -51,6 +49,7 @@ export const InitializeAgent = async () => {
     //   temperature:0.9,
     //   apiKey:`${process.env.OPEN_AI_API_KEY}`
     // })
+    const llm=Claudellm
 		const memory5 = new MemorySaver()
 	   
 		const agent = createReactAgent({
@@ -69,46 +68,29 @@ export const InitializeAgent = async () => {
         new AptosGetTokenDetailTool(agentRuntime),
         new AptosGetTokenPriceTool(agentRuntime),
         new AptosBalanceTool(agentRuntime),
-        new JouleGetPoolDetails(agentRuntime),
         new AptosAccountAddressTool(agentRuntime),
-        new LiquidSwapSwapTool(agentRuntime)
       ],
 			checkpointSaver: memory5,
-// 			messageModifier: `
-//   You are an intelligent on-chain agent that interacts with the Aptos blockchain via the Aptos Agent Kit. Your capabilities include fetching token details, checking prices, identifying arbitrage opportunities, rebalancing portfolios, predicting prices, and retrieving pool details using specialized tools.
-//    - use the userPortfolioTool to fetch the balance of token user has then find the best strategies for each of the token using YieldOptimizationTool.
-//    - You should never perform any transaction on your own unless the user explicitly propmpts you to do so. Keep this in mind.
-//    - When \YieldOptimizationTool\ is called just return the response of the tool no need to summarise it.
-//   - Only and Only If user asks for 24Change or % change of a token call the  \Find24HChangeTool\.
-//   - If a Transaction is being sent wait for the transaction to be completed and then return the hash of the transaction.
-//   - Always give complete answer by taking your time be it 30 sec but complete it don't let user hangin with incomplete response
-//   - Strictly use the \getLatestTransactionsTool\ When the user asks for latest transactions on the Aptos Blockchain
-//   - Use the \GetTransactionDetailTool\ When the user wants the details of a specific transaction on the Aptos Blockchain.
-//   - If no tool exists for a requested action, inform the user and suggest creating it with the Aptos Agent Kit.
-//   - Use the appropriate tool for a query when required and specify the tool's name in your response.
-//   - For internal (5XX) HTTP errors, advise the user to retry later.
-//   - Provide concise, accurate, and helpful responses, avoiding tool details unless asked.
-//   - use Panora Swap tool or LiquidSwapTool to swap tokens when user asks you to do so
- 
-// `,
 messageModifier: `
 		You are an intelligent on-chain agent that interacts with the Aptos blockchain via the Aptos Agent Kit.
 		Your capabilities include fetching token details, checking prices, identifying arbitrage opportunities, 
-		rebalancing portfolios, predicting prices, and retrieving pool details using specialized tools.
-
+		rebalancing portfolios, fetch the latest transactions, and retrieving pool details using specialized tools.
+    You only Support assets like usdc, usdt, apt, weth, thl and no other asset.
+    For the protocols you have access to only Joule Finance and Echelon Markets no other protocol should be used.
+    Never List the tool you have if any information is missiing ask the user for it like the transaction hash or anything.
 		**Guidelines:**
 		- Use **UserPortfolioTool** to fetch user token balances, then find the best strategies using **YieldOptimizationTool**.
 		- **NEVER perform a transaction** unless the user explicitly requests it.
 		- When calling **YieldOptimizationTool**, return its response **as is** without summarization.
+    - You can fetch the price of a token using **AptosGetTokenPriceTool**.
+    - You can always swap asset when users asks you to using the **PanoraSwapTool**.
 		- If the user asks for **24H change or % change**, call **Find24HChangeTool**.
 		- For transactions, **wait for completion** before returning the transaction hash.
 		- Use **GetLatestTransactionsTool** for recent Aptos blockchain transactions.
 		- Use **GetTransactionDetailTool** for details of a specific transaction.
 		- If no tool exists for an action, inform the user and suggest creating it with Aptos Agent Kit.
 		- For **5XX HTTP errors**, advise retrying later.
-		- Use **PanoraSwapTool** or **LiquidSwapTool** when the user requests token swaps.
 		- Provide complete, accurate, and **concise responses** without tool details unless asked.
-    - Perform google search for any data which is not available
 	`,
 		})
 		return { agent, account, agentRuntime };
