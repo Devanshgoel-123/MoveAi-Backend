@@ -116,7 +116,6 @@ export const getFearGreedIndex=async ()=>{
         value:item.value
        }
   })
-  console.log("The greed index is",answer)
   return answer
   }catch(err){
     console.log(err)

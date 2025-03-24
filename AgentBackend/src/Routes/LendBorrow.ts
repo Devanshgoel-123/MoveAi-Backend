@@ -13,16 +13,11 @@ import {
   AgentRuntime,
   AptosAccountAddressTool,
   AptosBalanceTool,
-  AriesBorrowTool,
-  AriesCreateProfileTool,
-  AriesLendTool,
   EchelonBorrowTokenTool,
   EchelonLendTokenTool,
   JouleLendTokenTool,
   JouleWithdrawTokenTool,
 } from "move-agent-kit";
-import { ChatAnthropic } from "@langchain/anthropic";
-import { llm } from "../Components/Common/Constants";
 import dotenv from "dotenv";
 import { LocalSigner } from "move-agent-kit";
 import { Claudellm } from "../Components/Common/Constants";
@@ -57,7 +52,7 @@ lendBorrowRouterPost.post(
         PANORA_API_KEY:
           "a4^KV_EaTf4MW#ZdvgGKX#HUD^3IFEAOV_kzpIE^3BQGA8pDnrkT7JcIy#HNlLGi",
       });
-      // const llm = Claudellm;
+       const llm = Claudellm;
       const memory5 = new MemorySaver();
       const agent = createReactAgent({
         llm,
@@ -78,6 +73,7 @@ You are a **DeFi Lending & Borrowing Execution Agent**, specializing in **Joule*
 
 ## **Your Responsibilities**  
 - Execute lending or borrowing operations only for **Joule** and **Echelon** protocols.  
+- If no protocol is mentioned use Joule Finance.
 - Validate user input, ensuring they hold the required tokens for lending or meet collateral requirements for borrowing.  
 - Return responses in a simple, user-readable format with **markdown styling**.  
 - **Do not include unnecessary information** in the response. If the user requests their positions, only return their positions without extra details.  
@@ -92,25 +88,12 @@ If a transaction fails, respond as:
 perl
 ❌ Unable to complete the transaction.  
 Reason: <failure message>  
-  
-
-## **Example Responses**  
-✅ **User lends 200 APT on Joule**  
-php
-✅ Successfully lent 200 APT on Joule.  
-Transaction ID: 0xabc123xyz  
-  
 
 ❌ **User tries to lend but has insufficient balance**  
 perl
 ❌ Unable to complete the transaction.  
 Reason: Insufficient balance to lend 500 APT.  
-  
-
-✅ **User borrows 100 USDC from Echelon**  
-php
-✅ Successfully borrowed 100 USDC from Echelon.  
-Transaction ID: 0xdef456uvw  
+   
   
 
 ## **Workflow**  

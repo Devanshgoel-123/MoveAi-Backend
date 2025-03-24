@@ -260,7 +260,9 @@ function calculateRequiredSwaps(
 async function executeSwap(swap: SwapAction): Promise<string> {
   try {
     console.log(`Executing swap: ${swap.amount} of ${swap.from_token_address} to ${swap.to_token_address}`);
-    const Setup=await InitializeAgent();
+    const Setup=await InitializeAgent({
+      key:`${process.env.PRIVATE_KEy}`
+    });
     const agent=Setup?.agent
     if(agent!==undefined){
       const response = [];

@@ -9,7 +9,7 @@ import {
 } from "@aptos-labs/ts-sdk"
 import { llm } from "../Components/Common/Constants"
 import { config } from "../Components/Common/Constants"
-import { AgentRuntime, AptosGetTokenDetailTool, AptosGetTokenPriceTool, PanoraSwapTool } from "move-agent-kit"
+import { AgentRuntime, AptosGetTokenDetailTool, AptosGetTokenPriceTool, EchelonBorrowTokenTool, EchelonLendTokenTool, JouleBorrowTokenTool, JouleLendTokenTool, PanoraSwapTool } from "move-agent-kit"
 import dotenv from "dotenv"
 import { createReactAgent } from "@langchain/langgraph/prebuilt"
 import { LocalSigner } from "move-agent-kit"
@@ -26,32 +26,31 @@ import { LendingBorrowingBestOpppurtunityTool } from "../Components/Agents/LendB
 import express, { Router,Request,Response } from "express";
 import { StakingUnstakingBestOpppurtunityTool } from "../Components/Agents/StakeUnstakeAgent"
 import { Claudellm } from "../Components/Common/Constants"
+import { decryptPrivateKey } from "./Wallet"
 dotenv.config()
 export const agentRouter:Router=express.Router();
-export const InitializeAgent = async () => {
+export const InitializeAgent = async ({
+  key
+}:{
+  key:string
+}) => {
 	try{
+
 		const aptosConfig = new AptosConfig({
 			network: Network.MAINNET,
 		})
 		const aptos = new Aptos(aptosConfig)
 		const account = await aptos.deriveAccountFromPrivateKey({
 			privateKey: new Ed25519PrivateKey(
-				PrivateKey.formatPrivateKey(`${process.env.PRIVATE_KEY}`, PrivateKeyVariants.Ed25519)
+				PrivateKey.formatPrivateKey(`${key || process.env.PRIVATE_KEY}`, PrivateKeyVariants.Ed25519)
 			),
 		})
 		const signer = new LocalSigner(account, Network.MAINNET)
 		const agentRuntime = new AgentRuntime(signer, aptos,{
 			PANORA_API_KEY: "a4^KV_EaTf4MW#ZdvgGKX#HUD^3IFEAOV_kzpIE^3BQGA8pDnrkT7JcIy#HNlLGi",
 		})
-		
-    // const llm=new OpenAI({
-    //   model:"gpt-3.5-turbo-instruct",
-    //   temperature:0.9,
-    //   apiKey:`${process.env.OPEN_AI_API_KEY}`
-    // })
     const llm=Claudellm
 		const memory5 = new MemorySaver()
-	   
 		const agent = createReactAgent({
       llm,
       tools: [
@@ -69,6 +68,10 @@ export const InitializeAgent = async () => {
         new AptosGetTokenPriceTool(agentRuntime),
         new AptosBalanceTool(agentRuntime),
         new AptosAccountAddressTool(agentRuntime),
+        new JouleLendTokenTool(agentRuntime),
+        new EchelonLendTokenTool(agentRuntime),
+        new EchelonBorrowTokenTool(agentRuntime),
+        new JouleBorrowTokenTool(agentRuntime)
       ],
 			checkpointSaver: memory5,
 messageModifier: `
@@ -95,20 +98,24 @@ messageModifier: `
 		})
 		return { agent, account, agentRuntime };
 	}catch(err){
-		console.log(err)
+		console.log("facing the error at agent,",err)
 		return null
 	}	
 }
 
 agentRouter.post("/", async (req: Request, res: Response):Promise<any> => {
     try {
-        const agentCache = await InitializeAgent()
-        
+      const { message,agentKey } = req.body;
+      console.log(agentKey)
+       const privateKey=decryptPrivateKey(agentKey);
+        const agentCache = await InitializeAgent({
+          key:agentKey
+        })
           if(agentCache===null){
-                return res.status(400).json({ error: "Message is required" });
+                return res.status(400).json({ error: "Please fund your wallet so that we can go ahead with your query" });
           }
           const { agent } = agentCache;
-          const { message } = req.body;
+          // console.log("the private key is:",privateKey)
           console.log("the message is:",message)
           if (!message) {
 			return res.status(400).json({ error: "Message is required" });

@@ -29,6 +29,16 @@ export const MarketAnalysisRouter=express.Router()
 MarketAnalysisRouter.get("/:tokenName",async (req:Request,res:Response):Promise<any>=>{
     try {
         const { tokenName } = req.params;
+        const {
+          agentWalletAddress,
+        }=req.query;
+        
+        if(agentWalletAddress===undefined){
+          return res.json({
+            data:"I am really sorry we couldn't process your request at the moment. \n Please Connect Your Wallet",
+            agentResponse:false,
+           })
+        }
         const token=(await fetchSupportedTokens()).filter((item)=>item.name.toLowerCase()===tokenName?.toLowerCase())[0]
         console.log(token)
         let tokenId=undefined;
@@ -70,18 +80,13 @@ MarketAnalysisRouter.get("/:tokenName",async (req:Request,res:Response):Promise<
                anthropicApiKey: process.env.ANTHROPIC_API_KEY,
            })
            const memory5 = new MemorySaver()
-           const tokenAmount = (await getTokenAmountOwnedByAccount(ACCOUNT_ADDRESS, token.token_address))/(10**token.decimals);
-           // console.log(await agentRuntime?.getUserAllPositions(ACCOUNT_ADDRESS as unknown as AccountAddress))
-           // console.log(await agentRuntime?.getPoolDetails(token.token_address))
-           // console.log(await agentRuntime.getTokenByTokenName(tokenName))
+           const tokenAmount = (await getTokenAmountOwnedByAccount(agentWalletAddress?.toString(), token.token_address))/(10**token.decimals);
            const agent = createReactAgent({
                llm,
                tools:[
                    new AptosGetTokenPriceTool(agentRuntime),
                    new AptosAccountAddressTool(agentRuntime),
                    new JouleGetPoolDetails(agentRuntime),
-                  new ThalaStakeTokenTool(agentRuntime),
-                  new EchoStakeTokenTool(agentRuntime)
                ],
                checkpointSaver: memory5,
               messageModifier: `
@@ -89,7 +94,7 @@ MarketAnalysisRouter.get("/:tokenName",async (req:Request,res:Response):Promise<
               
               Guidelines:
               - Analyze key metrics: Total Value Locked (TVL), Market Capitalization, Liquidity, and Volume.
-              - Thoroughly scan all major Aptos protocols (Thala, Joule, Echo, Aries only) where users can generate yield through staking, lending, or liquidity provision for ${tokenName}.
+              - Thoroughly scan all major Aptos protocols ( Joule, Echelon only) where users can generate yield through staking, lending, or liquidity provision for ${tokenName}.
               - For each protocol, provide specific details on:
                 * Current APY/APR rates for staking or liquidity pools
                 * Lock-up periods and unstaking timeframes
@@ -122,18 +127,6 @@ MarketAnalysisRouter.get("/:tokenName",async (req:Request,res:Response):Promise<
                  thread_id: `aptos-agent-1` 
                } 
              };
-            //  {
-            //   "tokenPriceUsd": "${tokenPriceUsd} USD",
-            //   "marketCap": "<value or 'Data unavailable'>",
-            //   "tvl": "<value or 'Data unavailable'>",
-            //   "liquidity": "<value or 'Data unavailable'>",
-            //   "riskScore": "<score> (<classification>)",
-            //   "riskExplanation": "<detailed reasoning based on concrete metrics>",
-            //   "historicalPerformance": "<insights from ${historicalPrices}>",
-            //   "userBalance": "${tokenAmount} ${tokenName} (≈ $<USD value>)",
-            //   "bestYieldOption": "<recommended protocol and strategy based on risk/reward>",
-            //   "displayText": "# ${tokenName} Analysis\\n\\n## Key Metrics\\n• Price: **${tokenPriceUsd} USD**\\n• Market Cap: **<market cap>**\\n• TVL: **<tvl>**\\n• Liquidity: **<liquidity>**\\n• Risk Score: **<score> (<classification>)**\\n\\n## Risk Assessment\\n<formatted risk explanation with bullet points>\\n\\n## Historical Performance\\n<formatted historical analysis with bullet points>\\n\\n## Staking Opportunities\\n\\n### <Protocol 1>\\n• Type: <type>\\n• APY: **<rate>**\\n• Lock Period: <period>\\n• Risks: <risks>\\n• Projected Yield: **<yield>**\\n\\n### <Protocol 2>\\n<same format as above>\\n\\n## Best Yield Option\\n<formatted recommendation>\\n\\n## Recommendation: <HOLD/SELL/STAKE>\\n<bulleted reasoning>\\n\\n"
-            // }
            const stream = await agent.stream(
                {
                  messages: [
@@ -195,8 +188,6 @@ MarketAnalysisRouter.get("/:tokenName",async (req:Request,res:Response):Promise<
               data:answer || "I am really sorry we couldn't process your request at the moment. \n Please Try Again Later",
               agentResponse:true,
               isParsed:isParsed,
-              // position:agentRuntime?.getUserAllPositions(ACCOUNT_ADDRESS as unknown as AccountAddress),
-              // detailsPool:agentRuntime?.getPoolDetails(token.token_address)
              })
         } catch (error) {
        console.log(error)

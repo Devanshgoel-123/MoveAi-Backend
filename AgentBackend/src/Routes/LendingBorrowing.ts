@@ -12,7 +12,9 @@ export const LendingBorrowingRouter=express.Router();
  LendingBorrowingRouter.post("/:tokenName",async (req: Request, res: Response):Promise<any> => {
     try {
         const { tokenName } = req.params;
-        const { message } = req.body;
+        const { 
+          message,
+         } = req.body;
         if (!tokenName) {
             return res.status(400).json({ error: "Please provide a token name" });
         }

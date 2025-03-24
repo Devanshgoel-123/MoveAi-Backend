@@ -12,7 +12,6 @@ export const getHistoricalPrice = async (tokenId:string) => {
     };
 
     const response = await axios.get(url, {headers });
-    console.log(response.data.prices);
     return response.data.prices;
   } catch (error) {
     console.error('Error fetching historical price:', error);

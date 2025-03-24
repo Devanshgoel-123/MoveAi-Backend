@@ -8,9 +8,17 @@ export const userPoolRouter=express.Router();
 
 userPoolRouter.get("/",async(req:Request,res:Response):Promise<any>=>{
     try{
-      const echelonData=await getAllMarketsDataEchelon();
-      const jouleUserData=await JouleFinanceUserData();
-      const jouleMarketData=await JouleFinanceMarketData();
+      const {
+        agentWalletAddress
+      }=req.query;
+      if(agentWalletAddress==="" || agentWalletAddress===undefined){
+        return res.status(500).json(({
+          message:"Please connect Your Wallet and then continue"
+      }))
+      }
+      const echelonData=await getAllMarketsDataEchelon(agentWalletAddress.toString());
+      const jouleUserData=await JouleFinanceUserData(agentWalletAddress.toString());
+      const jouleMarketData=await JouleFinanceMarketData(agentWalletAddress.toString());
       return res.json({
         echelonUserData:echelonData?.userPositions,
         echelonMarketData:echelonData?.marketDataFiltered,

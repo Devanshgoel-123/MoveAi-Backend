@@ -13,7 +13,7 @@ import {
 import axios from "axios"
 import { ACCOUNT_ADDRESS } from "../../Common/Constants"
 
-export const JouleFinanceUserData=async()=>{
+export const JouleFinanceUserData=async(accountAddress:string)=>{
     try{
         const aptosConfig = new AptosConfig({
 			network: Network.MAINNET,
@@ -28,7 +28,7 @@ export const JouleFinanceUserData=async()=>{
 		const agentRuntime = new AgentRuntime(signer, aptos,{
 			PANORA_API_KEY: "a4^KV_EaTf4MW#ZdvgGKX#HUD^3IFEAOV_kzpIE^3BQGA8pDnrkT7JcIy#HNlLGi",
 		})
-		const userAddress=AccountAddress.fromString(ACCOUNT_ADDRESS)
+		const userAddress=AccountAddress.fromString(accountAddress)
         console.log(userAddress.toString())
 		const userPositions = await agentRuntime.getUserAllPositions(userAddress);
         console.log("the user positions are",userPositions)
@@ -40,11 +40,11 @@ export const JouleFinanceUserData=async()=>{
     }
 }
 
-export const JouleFinanceMarketData=async ()=>{
+export const JouleFinanceMarketData=async (accountAddress:string)=>{
 	try{
 		const response=await axios.get("https://price-api.joule.finance/api/market")
 		const marketData=response.data.data;
-		const userData: any = await JouleFinanceUserData();
+		const userData: any = await JouleFinanceUserData(accountAddress);
 		const filteredData=marketData.filter((item:any)=>{
 			return item?.asset.assetName.toLowerCase().includes("usdc") || item?.asset.assetName.toLowerCase().includes("usdt") || item?.asset.assetName.toLowerCase().includes("aptos") || item?.asset.assetName.toLowerCase().includes("weth") || item?.asset.assetName.toLowerCase().includes("thl")
 		})
@@ -59,7 +59,7 @@ export const JouleFinanceMarketData=async ()=>{
 		finalData = finalData.filter((item: any) => {
 			const match = userData.some((userItem: any) => {
 			  if (item.coin.toLowerCase() === userItem.tokenAddress.toLowerCase()) {
-				item.supply = userItem.amount / 1e6;
+				item.supply = userItem.amount / 1e8;
 				item.type = userItem.type;
 				return true;
 			  }

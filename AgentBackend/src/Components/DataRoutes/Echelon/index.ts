@@ -9,13 +9,13 @@ const aptos = new Aptos(aptosConfig)
 
 ;
 
-export const getAllMarketsDataEchelon=async ()=>{
+export const getAllMarketsDataEchelon=async (accountAddress:string)=>{
    try{
     const client = new EchelonClient(aptos, "0xc6bc659f1649553c1a3fa05d9727433dc03843baac29473c817d06d39e7621ba");
     const markets = await client.getAllMarkets();
     const marketData = await Promise.all(
         markets.map(async (market) => {
-            const temp =(await client.getAccountSupply(ACCOUNT_ADDRESS, market)) || 0;
+            const temp =(await client.getAccountSupply(accountAddress, market)) || 0;
             const supply = temp / 1e6;
             const supplyApr = await client.getSupplyApr(market);
             const coin = await client.getMarketCoin(market);
