@@ -9,7 +9,7 @@ export const walletRouter:Router=express.Router();
 const prisma=new PrismaClient();
 const ALGORITHM = "aes-256-cbc"; 
 const SECRET_KEY = process.env.ENCRYPTION_KEY || "default_key_should_be_32_bytes"; 
-const IV = Buffer.alloc(16, 0); 
+const IV = Buffer.alloc(16, "0"); 
 const key = crypto.createHash("sha256").update(String(SECRET_KEY)).digest();
 
 export function encryptPrivateKey(privateKey: string): string {

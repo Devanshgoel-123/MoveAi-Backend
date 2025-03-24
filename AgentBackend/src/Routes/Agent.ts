@@ -109,7 +109,7 @@ agentRouter.post("/", async (req: Request, res: Response):Promise<any> => {
       console.log(agentKey)
        const privateKey=decryptPrivateKey(agentKey);
         const agentCache = await InitializeAgent({
-          key:agentKey
+          key:privateKey
         })
           if(agentCache===null){
                 return res.status(400).json({ error: "Please fund your wallet so that we can go ahead with your query" });
