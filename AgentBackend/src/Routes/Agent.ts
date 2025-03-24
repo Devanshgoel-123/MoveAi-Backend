@@ -115,7 +115,6 @@ agentRouter.post("/", async (req: Request, res: Response):Promise<any> => {
                 return res.status(400).json({ error: "Please fund your wallet so that we can go ahead with your query" });
           }
           const { agent } = agentCache;
-          // console.log("the private key is:",privateKey)
           console.log("the message is:",message)
           if (!message) {
 			return res.status(400).json({ error: "Message is required" });
